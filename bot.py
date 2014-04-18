@@ -5,6 +5,7 @@ from sys import exit
 
 import logging
 
+from ConfigParser import SafeConfigParser
 
 from select import select
 
@@ -14,14 +15,11 @@ from oyoyo import helpers
 
 from cmd import Cmd
 
-IRCHOST = 'localhost'
-PORT    = 6667
-NICK    = 'PeeBot'
-COMMAND_PREFIX = '!'
-
 privmsg_handlers = []
 channelmsg_handlers = []
 command_handlers = []
+
+config = None
 
 # == commandline interface
 class Cmdline(Cmd):
@@ -42,6 +40,7 @@ def connect_callback(cli):
 
 class BotLogic(DefaultCommandHandler):
 
+    COMMAND_PREFIX = '!'
     # Handle messages
     def privmsg(self, nick, chan, msg):
         global privmsg_handlers
@@ -55,7 +54,7 @@ class BotLogic(DefaultCommandHandler):
                 except Exception as e:
                     print "Private message handler failed: %s" % (handler, e)
         else:
-            if msg[0] == COMMAND_PREFIX:
+            if msg[0] == self.COMMAND_PREFIX:
                 # this is a bot command
                 print "Bot command recieved from %s in %s: %s" % (nick,chan,msg)
 
@@ -113,10 +112,21 @@ if __name__ == "__main__":
 
     reload_handlers()
 
+    defaults = { 'server':'localhost',
+                'port':6667,
+                'nick':'UnnamedBot', }
+
+    config = SafeConfigParser(defaults)
+    config.read('irc.ini')
+
+    IRCHOST=config.get('main','server')
+    PORT=int(config.get('main','port'))
+    NICK=config.get('main','nick')
+
     # == init handlers
     cli = IRCClient(BotLogic,
                     host=IRCHOST, port=PORT, nick=NICK,
-                    connect_cb = connect_callback)
+                    connect_cb=connect_callback)
 
     cmdline = Cmdline()
     # == end init handlers

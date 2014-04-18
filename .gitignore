@@ -55,3 +55,7 @@ docs/_build/
 #venv stuff
 include/
 local/
+
+
+
+irc.ini

@@ -1,0 +1,5 @@
+[main]
+nick=UnnamedBot
+server=localhost
+port=6667
+
